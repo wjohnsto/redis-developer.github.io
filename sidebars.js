@@ -587,6 +587,7 @@ module.exports = {
       type: 'category',
       label: 'E-books',
       items: [
+        'ebooks/json-web-tokens-jwts-are-not-safe',
         'ebooks/nosql-data-modeling-patterns'
       ],
     },

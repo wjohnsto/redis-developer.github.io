@@ -1,0 +1,180 @@
+---
+id: json-web-tokens-jwts-are-not-safe
+title: JSON Web Tokens (JWTs) Are Not Safe
+image: /img/ebooks/json-web-tokens-jwts-are-not-safe/json-web-tokens-jwts-are-not-safe.jpg
+sidebar_label: JSON Web Tokens Are Not Safe
+slug: /ebooks/json-web-tokens-jwts-are-not-safe
+---
+
+import Excerpt from '@theme/Excerpt';
+
+<Excerpt cta="https://redis.com/docs/json-web-tokens-jwts-are-not-safe/" image={frontMatter.image} title={frontMatter.title}>
+
+## Introduction
+
+JSON Web Tokens are popularly used for managing user sessions. However, there are many in-depth articles and videos from subject matter experts (SMEs) of security companies like Okta talking about the [potential dangers and inefficiencies of using JWT tokens](http://cryto.net/~joepie91/blog/2016/06/13/stop-using-jwt-for-sessions/). **Yet, these warnings are overshadowed by marketers, YouTubers, bloggers, course creators, and others who knowingly or unknowingly continue to promote them.**
+
+Below are some examples of SMEs talking about the security problems of JWTs.
+
+<div className="container">
+<div className="row">
+<div className="col col--6">
+
+> “JSON Web Tokens can be used to validate user locally without the need for a database but then you put yourself at risk for massive security issues.”
+
+**Source:** [“Why JWTs Are Bad for Authentication”](https://www.youtube.com/watch?v=GdJ0wFi1Jyo) — [Randall Degges](https://www.linkedin.com/in/rdegges/), Head of Developer Advocacy, Okta, a leading enterprise identity provider.
+
+</div>
+<div className="col col--6">
+
+> “To be clear: This article does not argue that you should never use JWT—just that it isn’t suitable as a session mechanism, and that it is dangerous to use it like that. Valid usecases do exist for them, in other areas.”
+
+**Source:** [“Stop using JWT for sessions”](http://cryto.net/~joepie91/blog/2016/06/13/stop-using-jwt-for-sessions/)
+
+</div>
+</div>
+</div>
+
+> “I don’t care if you want to use stateless client tokens. They’re fine. You should understand the operational limitations (they may keep you up late on a Friday scrambling to deploy a token blacklist), but, we’re all adults here, and you can make your own decisions about that.
+>
+> The issue with JWT in particular is that it doesn’t bring anything to the table, but comes with a whole lot of terrifying complexity. Worse, you as a developer won’t see that complexity: JWT looks like a simple token with a magic cryptographically protected bag-of-attributes interface. The problems are all behind the scenes.”
+
+**Source:** [Thomas H. Ptacek, a well-known security researcher on Hacker News](https://news.ycombinator.com/item?id=13866883).
+
+> “Adopting them comes with drawbacks. You either forgo revocation, or you need to have infrastructure in place that is way more complex than simply adopting a session store and opaque tokens.”
+
+**Source:** ["JWT should not be default for your sessions”](https://evertpot.com/jwt-is-a-bad-default/)
+
+One of the main reasons for JWTs usage is the need for speed. The other reason is that it’s simple to use. The last reason is it’s a buzzworthy and friendly name that’s excellent for marketing. The name combines “JSON” (which is generally well liked), “Web” (for web), and “Token” (which implies stateless), and all of this may make people think it’s perfect for their web authentication. In reality, it’s not.
+
+So this is a case in which the marketers have beaten out the engineers and security experts.
+
+But it’s not all bad, because there are regular long and passionate debates about JWT on Hacker News (see [here](https://news.ycombinator.com/item?id=21783303), [here](https://news.ycombinator.com/item?id=27136539) and [here](https://news.ycombinator.com/item?id=24352360)), so there is hope. This amount of debate should give you pause because security should ideally be a black-and-white issue: either something is secure or it’s not.
+
+:::info
+
+By the end of this book, you’ll know the benefits and the dangers of JWTs, and also the battle-tested solution that thousands of companies use to overcome this.
+
+:::
+
+## HTTP Sessions, Authentication, and Authorization
+
+:::note
+
+Before we get into JWTs, let’s take a look at a use case to better understand sessions, authentication, and authorization.
+
+:::
+
+### The use case
+
+Imagine that you are using Twitter. You log in to the platform, you “like” someone’s tweet, and then you write a new tweet of your own. So you perform two additional actions after you log in. You need to be authenticated and authorized before you can perform each of the three specific actions. This is because HTTP is a stateless protocol, which means that the HTTP request doesn’t store who you are from one request to the next.
+
+In **Figure 1**, you are making three different requests and the server is verifying if your request is valid three different times.
+
+<strong>Figure 1</strong>
+<img
+  src="/img/ebooks/json-web-tokens-jwts-are-not-safe/figure-1-three-requests.png"
+  alt="Figure 1 Three different requests"
+  title="Figure 1 Three different requests"
+/>
+
+After you log in, the servers typically create a session. The **session** is a container that houses data about the
+user’s interaction with the website or service, and, as its name implies, its lifetime is typically bound by the user’s
+log in and log out actions. A session typically will have the following information:
+
+- User’s profile information, such as name, date of birth, email address, etc.
+- User’s permissions, such as “user,” “admin,” “supervisor,” “super-admin,” etc.
+- Other app-related data, such as shopping cart details if it’s a retail app, etc.
+- Session expiration, such as one hour from now, one week from now, etc.
+
+#### Managing sessions presents five major challenges:
+
+1. Session data needs to be stored somewhere.
+1. Since HTTP is stateless, session data must be sent back to the client so that the client can keep adding this
+   information to future requests.
+1. The client then needs to send the session data back to the server for future requests.
+1. The server needs to verify if the client’s information is valid; that is, “authentication” and “authorization.” For
+   example, whether or not the user who is liking a tweet is a “user” or “admin,” if the session expired or not, etc.
+1. Session expiration. At some point, the session needs to expire to force people to log in again for security reasons.
+
+Let’s look at each of these five points and get a general idea of how they work in most applications.
+
+### 1. Where to store the session data (client vs. database)
+
+If you send the session data back to the client (say browser or mobile app), then you risk security issues. Someone
+could access or intercept the session data, change that data, and access the server. In addition, there could be
+a huge amount of data that’s going back and forth between the client and the server. So it needs to be stored in
+the backend—typically in a database.
+
+### 2. How to send session data to the client
+
+If you create a session in the server (upon login) and then keep that data in the database, how can the client
+know about it? In order to solve this problem, servers generate a session token that looks like a random string that
+points to the actual session data in the database and sends it back to the client. The server either sends the session
+token in the form of a cookie or an HTTP response.
+
+The session token is an opaque random string that looks something like this: `fsaf12312dfsdf364351312srw12312312dasd1et3423r`
+
+In the database, that string points to the entire session data. It will look something like this:
+
+#### User's session table
+
+**Figure 2** Example of how a session token maps to a session inside a database
+
+| Session token                                    | Session                                                                                                                     |
+| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `fsaf12312dfsdf364351312srw12312312dasd1et3423r` | `{ "user_name": "raja", "email": "raja@redis.com", "isAdmin": true, "shoppingCart": 3, "session_expiration": "Aug-25th" }`  |
+| `sadfsdfsd24323456456dfdfasda454`                | `{ "user_name": "Mike", "email": "Mike@redis.com", "isAdmin": false, "shoppingCart": 1, "session_expiration": "Aug-22th" }` |
+
+### 3. How the client can send session tokens to the server for future requests
+
+Once the client receives the session token in the form of a cookie or as a token, it keeps this information and adds this session token information to every future request.
+
+**Figure 3** Example of how sessions and cookies are created and stored
+
+<img
+  src="/img/ebooks/json-web-tokens-jwts-are-not-safe/figure-3-how-sessions-and-cookies-are-created-and-stored.png"
+  alt="Figure 3 How sessions and cookies are created and stored"
+  title="Figure 3 How sessions and cookies are created and stored"
+/>
+
+**Here is how it works:**
+
+1. User logs in.
+1. The server creates a session, session token, and cookie.
+1. The server then stores the session and the session
+   token into a database.
+1. The server then sends the cookie that internally
+   contains the session token back to the browser.
+
+### 4. How the server can handle authentication and authorization
+
+Upon every future request, the server queries the database with the session token to get the actual session back, and then the server checks for two things:
+
+1. **You are authenticated:** Your login data is still valid (verifies it is not tampered with, not expired, not logged out, etc.)
+1. **You are authorized:** You can log in but do you have permission to do that specific action? (i.e. check if you are an admin, data owner, user, employee, super admin, etc.)
+
+### 5. When will the session expire
+
+Each session also has an expiration time, which can be set by the backend developer as anything from 5 minutes to 30 days. After that set time, the session data will be deleted. And if the user makes a call to perform some action, typically the user will be denied permission, and most client applications will redirect the user to the login page, forcing them to log in again. And when they log in, a new session is created with a new expiration time and the cycle starts over.
+
+:::note
+
+If you authenticate using [OAuth](https://en.wikipedia.org/wiki/OAuth), you get multiple tokens such as “access token,” “refresh token,” and so on. These are all there to provide finer control of when the session should expire. For example, the client can use the refresh token to extend the session for additional time instead of logging people out.
+
+:::
+
+:::tip Section Summary
+
+- HTTP is stateless, so to keep track of a user upon login, a “session” is created.
+- A session is data about a user and their activity. It contains who they are, what they are authenticated and authorized to do, and also to keep track of any specific product-related data.
+- Session data is typically stored in a database.
+- A “session token” that points to the session is created and sent to the client for future references.
+- The client sends this “session token” for every future request (via request header or through a cookie) to identify the user and other details that are stored in the session.
+- The server retrieves the session from the session token by making an additional database call, checks if a valid session exists, and if the session token and the session itself are valid, it lets the user take future actions, such as liking a tweet, creating a tweet, etc.
+
+:::
+
+## Download the E-book
+
+</Excerpt>
