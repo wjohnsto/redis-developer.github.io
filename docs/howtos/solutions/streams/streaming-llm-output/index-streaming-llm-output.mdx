@@ -27,6 +27,17 @@ You can store multiple fields and string values with an automatic ID generated f
 - **Easy Integration**: Redis Streams can be easily integrated with various clients and servers, making it a versatile choice for streaming data.
 - **Producer/ Consumer problems** : Fast Producer and slow consumer problem can be solved using Redis streams where consumers can read at their own pace but producer can keep producing messages at higher rate without losing any data.
 
+## Architecture Flow
+
+The architecture flow of the application is as follows:
+
+![stream-llm-output-arch](./images/stream-llm-output-arch.jpg)
+
+1. The browser sends a user question to the server using sockets.
+2. The server receives the user question via sockets and forwards it to OpenAI (LLM) for processing.
+3. OpenAI processes the user question and returns a response in chunks, which are then added to a Redis stream.
+4. A stream consumer listens to the Redis stream and broadcasts the chunks to connected clients through sockets.
+
 ## Demo Setup
 
 - Download the source code of demo from the GitHub repository and navigate to the `streaming-llm-output` directory.
@@ -63,7 +74,7 @@ npm run frontend
 
 - Open `http://127.0.0.1:5400/` in your browser to play with demo
 
-![stream llm output](./images/stream-llm-output.gif)
+![stream llm output](./images/stream-llm-output-demo.gif)
 
 ## How it works ?
 
