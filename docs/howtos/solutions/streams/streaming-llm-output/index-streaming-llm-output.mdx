@@ -21,10 +21,11 @@ You can store multiple fields and string values with an automatic ID generated f
 ## Advantages of using Redis streams
 
 - **Real-time streaming**: Redis Streams allow you to stream data in real-time to multiple consumers. _In this case, user can see the output in real-time as it is generated instead of waiting for the entire LLM output to be generated._
-- **Scalability**: Redis Streams are highly scalable and can handle a large volumes of messages.
+- **Scalability**: Redis Streams are highly scalable and can handle a **large volumes** of messages.
 - **Persistence**: Redis Streams provide persistence, allowing for reliable message delivery and replay capabilities in case of failures.
 - **Consumer groups**: Redis Streams support consumer groups, which allow multiple consumers to read from the same stream. Each consumer can read and acknowledge messages independently, ensuring that message is processed only once.
 - **Easy Integration**: Redis Streams can be easily integrated with various clients and servers, making it a versatile choice for streaming data.
+- **Producer/ Consumer problems** : Fast Producer and slow consumer problem can be solved using Redis streams where consumers can read at their own pace but producer can keep producing messages at higher rate without losing any data.
 
 ## Demo Setup
 
@@ -398,6 +399,8 @@ httpServer.listen(3000, async () => {
 
 Now, back end server listens for the `askQuestion` socket event from the client (browser) and triggers the `askQuestion` function to send the question to the LLM and stream the output to the Redis stream.
 The `readStream` function reads the stream data and emits the chunks to the client (browser) using the `chunk` event.
+
+Note : In this tutorial, we are using `xRead` command to read the stream data, but you can also use `xReadGroup` command to read the stream data in consumer groups and handle the consumer acknowledgment and re-reading of the stream data in case of failure.
 
 ### Sample front end
 
