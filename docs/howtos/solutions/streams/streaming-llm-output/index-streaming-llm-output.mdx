@@ -14,13 +14,13 @@ In this tutorial, we will explore how to stream output (in chunks) from a Large 
 
 ## What are Redis streams?
 
-[Redis Streams](https://redis.io/docs/latest/develop/data-types/streams/) is a powerful data structure that allows you to efficiently handle streams of data, similar to message queues or append-only logs.
+[Redis Streams](https://redis.io/docs/latest/develop/data-types/streams/) are powerful data structure that allows you to efficiently handle streams of data, similar to message queues or append-only logs.
 
 You can store multiple fields and string values with an automatic ID generated for each stream entry.
 
 ## Advantages of using Redis streams
 
-- **Real-time streaming**: Redis Streams allow you to stream data in real-time to multiple consumers. _In this case, user can see the output in real-time as it is generated instead of waiting for the entire LLM output to be generated._
+- **Real-time streaming**: Redis Streams allow you to stream data in real-time to multiple consumers. In our demo case, user can see the output in real-time as it is generated instead of waiting for the entire LLM output to be generated.
 - **Scalability**: Redis Streams are highly scalable and can handle a **large volumes** of messages.
 - **Persistence**: Redis Streams provide persistence, allowing for reliable message delivery and replay capabilities in case of failures.
 - **Consumer groups**: Redis Streams support consumer groups, which allow multiple consumers to read from the same stream. Each consumer can read and acknowledge messages independently, ensuring that message is processed only once.
@@ -44,7 +44,7 @@ The architecture flow of the application is as follows:
 
 :::tip GITHUB CODE
 
-git clone https://github.com/PrasanKumar93/redis-short-demos.git
+git clone https://github.com/redis-developer/redis-short-demos.git
 cd redis-short-demos/streaming-llm-output
 :::
 
@@ -75,6 +75,10 @@ npm run frontend
 - Open `http://127.0.0.1:5400/` in your browser to play with demo
 
 ![stream llm output](./images/stream-llm-output-demo.gif)
+
+Once you have the application running, you can ask a question in the input box and click on the search button. The application will stream the output from the LLM in real-time instead of waiting for the entire output to be generated.
+
+Now, Select `Without Stream` checkbox and click on search button to see the output without streaming. In this case, you will notice a delay in displaying the output as it waits for the entire output to be generated.
 
 ## How it works ?
 
@@ -411,7 +415,7 @@ httpServer.listen(3000, async () => {
 Now, back end server listens for the `askQuestion` socket event from the client (browser) and triggers the `askQuestion` function to send the question to the LLM and stream the output to the Redis stream.
 The `readStream` function reads the stream data and emits the chunks to the client (browser) using the `chunk` event.
 
-Note : In this tutorial, we are using `xRead` command to read the stream data, but you can also use `xReadGroup` command to read the stream data in consumer groups and handle the consumer acknowledgment and re-reading of the stream data in case of failure.
+Note : In this tutorial, we are using `xRead` command to read the stream data, but you can also use `xReadGroup` command to read the stream data in consumer groups and handle the consumer acknowledgment and re-reading of the stream data in case of failure. Sample code for `xReadGroup` is available in the `streaming-llm-output/src/socket-x-read-group.ts` file in demo source code.
 
 ### Sample front end
 
@@ -450,13 +454,13 @@ function onPageLoad() {
 
 [RedisInsight](https://redis.com/redis-enterprise/redis-insight/) is a powerful GUI tool that allows you to interact with Redis data visually.
 
-Let's monitor the Redis stream created by the application using RedisInsight.
+Let's monitor the Redis stream `OPENAI_STREAM` created by the application using RedisInsight.
 
-![RI Streams](./images/ri-streams.png)
+![RI Streams](./images/stream-llm-output-ri-streams.png)
 
-Also visualize the `question` JSON stored in Redis
+Let's visualize the `question` JSON stored in Redis
 
-![RI JSON](./images/ri-json.png)
+![RI JSON](./images/stream-llm-output-ri-json.png)
 
 ## Conclusion
 
