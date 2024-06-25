@@ -242,9 +242,24 @@ By following this tutorial, you have successfully built a sophisticated conversa
 
 ## Try advanced example?
 
-In addition to `chat memory` in Flowise, you can also use Redis as `vector store` to store and retrieve embeddings for your conversational agent. This can be useful for tasks like **semantic search**, **recommendation systems**, and more.
+In addition to using **chat memory** in Flowise, you can also leverage Redis as a **vector store** to store and retrieve embeddings for your conversational agent. This functionality is beneficial for tasks such as **semantic search, recommendation systems**, and more.
 
-You can try advanced example by [importing this chatflow](./TextFileRAGSearchChatflow.json) in Flowise and configuring the Redis and OpenAI nodes. Upload some [sample products](./products.zip) or other text files in the `Text File` node.
-This sample chatflow demonstrates how to use Redis as a vector store to perform semantic search using the RAG (Retrieval-Augmented Generation) concept.
+Below sample chatflow demonstrates how to use Redis as a vector store to perform semantic search using the RAG (Retrieval-Augmented Generation) concept.
 
 ![06-rag-flow](./images/06-rag-flow.gif)
+
+**Steps to use the advanced example**
+
+1. Import the Chatflow:
+   Download and import the provided [chatflow JSON file](./TextFileRAGSearchChatflow.json) into Flowise and save it.
+
+2. Configure Nodes:
+
+   - Redis Node: Set up the Redis nodes with your Redis instance details.
+   - OpenAI Node: Configure the OpenAI nodes with your API key and necessary parameters.
+
+3. Upload Sample Data:
+   Unzip and upload the provided [sample products](./products.zip) or any other text files into the `Text File` node. This data will be used for semantic search and recommendations.
+
+4. Test the Chatflow:
+   Initiate the chatflow and perform searches or queries to see how the system retrieves and utilizes the embeddings stored in Redis to generate meaningful responses.
